@@ -156,8 +156,8 @@
           el('p', { class: 'ask' }, 'Is this a real English word?'),
           el('div', { class: 'bigword' }, it.w),
           el('div', { class: 'yn' },
-            el('button', { class: 'yes', type: 'button', onclick: function () { fin(true); } }, '✓ Yes'),
-            el('button', { class: 'no', type: 'button', onclick: function () { fin(false); } }, '✕ No'))));
+            el('button', { class: 'yes', type: 'button', onclick: function () { fin(true); } }, el('span', { html: X.ICON.check, style: 'display:flex' }), 'Yes'),
+            el('button', { class: 'no', type: 'button', onclick: function () { fin(false); } }, el('span', { html: X.ICON.cross, style: 'display:flex' }), 'No'))));
         ctx.footer(null);
         timer = ctx.startTimer(5, function () { fin(null); });
       });
@@ -463,7 +463,12 @@
       await next('Continue', function (btn) { go = btn; btn.disabled = true; });
       S.stop(); busy = false;
       out.turns.push({ partner: turn.partner, answer: turn.a, given: chosen, ok: chosen === turn.a });
-      if (!timeUp) { list.reveal(turn.a); await next('Next'); }
+      if (!timeUp) {
+        list.reveal(turn.a);
+        const shown = next('Next');
+        ctx.feedback(chosen === turn.a, chosen === turn.a ? 'Correct!' : 'Correct answer:', chosen === turn.a ? '' : turn.a);
+        await shown;
+      }
       if (turn.partner) say(it.partner.name, turn.partner);
       say(null, turn.a);
     }
@@ -537,6 +542,7 @@
     ta.input.disabled = true;
     await until(ctx, prepSec, 'Start writing');
     chip.textContent = 'Write · ' + minutes + ' minutes';
+    chip.classList.add('go');
     ta.input.disabled = false; ta.input.focus();
     const r = await until(ctx, seconds, 'Continue');
     return { response: ta.input.value.trim(), seconds: r.seconds };
@@ -549,7 +555,7 @@
     if (ctx.aborted) return { type: 'interactiveWriting', open: [] };
     ctx.sub('Part 2 / 2');
     const ta = textArea(6);
-    ctx.body(el('div', null, el('span', { class: 'chip phase' }, 'Write · 3 minutes'),
+    ctx.body(el('div', null, el('span', { class: 'chip phase go' }, 'Write · 3 minutes'),
       el('p', { class: 'ask' }, 'Write a follow-up response for 3 minutes'),
       el('div', { class: 'prompt' }, it.q2, el('div', { class: 'prev' }, el('b', null, it.q), '\n\n' + (a.response || '—'))), ta.node));
     ta.input.focus();
@@ -583,6 +589,7 @@
     }
     if (ctx.aborted) return null;
     if (chip) chip.textContent = 'Speak · up to ' + (seconds >= 120 ? Math.round(seconds / 60) + ' minutes' : seconds + ' seconds');
+    if (chip) chip.classList.add('go');
     mic.onclick = null;
     mic.classList.add('live');
     state.textContent = 'Recording…';

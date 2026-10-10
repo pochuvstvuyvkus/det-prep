@@ -336,11 +336,11 @@
     X.TYPES.forEach(function (t, i) {
       link(t.key, (i + 1) + '. ' + t.name);
       body.appendChild(el('section', { id: 'g-' + t.key, class: 'task' },
-        el('div', { class: 'head' },
-          el('div', null, el('h2', null, (i + 1) + '. ' + t.name), el('div', { class: 'ru' }, t.ru)),
+        el('div', { class: 'head c-' + t.skill },
+          el('div', { class: 'l' }, X.ico(t.key), el('div', null, el('h2', null, (i + 1) + '. ' + t.name), el('div', { class: 'ru' }, t.ru))),
           el('a', { class: 'btn sm', href: '#/start/type/' + t.key }, 'Тренировать')),
         el('div', { class: 'meta' },
-          el('span', { class: 'chip skill-' + t.skill }, el('i', { class: 'dot' }), X.SKILL[t.skill] + (t.key === 'listening' ? ' + Writing' : '')),
+          el('span', { class: 'chip c-' + t.skill }, X.SKILL[t.skill] + (t.key === 'listening' ? ' + Writing' : '')),
           el('span', { class: 'chip plain' }, t.time),
           el('span', { class: 'chip plain' }, 'в тесте: ' + t.count)),
         el('div', { html: TASKS[t.key] })));
