@@ -90,6 +90,7 @@
   // ---------- recorded voices ----------
   // Listening material is pre-recorded (audio/<clip>.m4a) so it sounds the same on every device.
   // One shared player: phones allow sound without a tap only on an element that a tap has started once.
+  const RECORDING = 2; // raise after every re-recording so browsers drop the old clips
   const player = typeof Audio !== 'undefined' ? new Audio() : null;
   const SILENCE = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=';
   let clipToken = 0, clipEnd = null;
@@ -105,7 +106,7 @@
       clipEnd = finish;
       player.onended = function () { finish(true); };
       player.onerror = viaBrowser;
-      player.src = 'audio/' + clip + '.m4a';
+      player.src = 'audio/' + clip + '.m4a?r=' + RECORDING;
       const p = player.play();
       if (p && p.catch) p.catch(viaBrowser); // an interrupted clip is already finished, so this only acts on a real refusal
     });
