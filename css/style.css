@@ -140,6 +140,11 @@ body.running .app { max-width: none; padding: 0; }
 .ico.lg svg { width: 46px; height: 46px; }
 
 /* ---------- home ---------- */
+.resume { display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: center; background: var(--yellow-s); border-color: var(--yellow); border-bottom-width: 6px; margin-bottom: 28px; }
+.resume h3 { font: 900 22px/1.2 var(--font); color: var(--yellow-t); }
+.resume p { color: var(--yellow-t); margin-top: 4px; }
+.resume .row { margin-top: 14px; }
+@media (max-width: 760px) { .resume { grid-template-columns: 1fr; } .resume > div:first-child { display: none; } .resume .btn { flex: 1 1 100%; } }
 .hero { display: grid; grid-template-columns: 1.05fr .95fr; gap: 24px; align-items: center; padding: 12px 0 8px; }
 .kicker { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px; border-radius: 999px; background: var(--yellow-s); color: var(--yellow-t); font: 800 14px/1 var(--font); }
 .kicker i { width: 10px; height: 10px; border-radius: 50%; background: var(--yellow); }

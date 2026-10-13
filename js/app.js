@@ -83,6 +83,7 @@
         isDone && i !== k ? el('span', { html: X.ICON.check }) : String(i + 1)));
     }
     mount(
+      draftCard(),
       el('section', { class: 'hero' },
         el('div', null,
           el('span', { class: 'kicker' }, el('i'), 'Вариант дня № ' + (k + 1) + ' · ' + today),
@@ -200,9 +201,53 @@
           store.set('name', name.value.trim());
           session.name = name.value.trim();
           S.unlock();
+          finalizeDraft();
           run(session, mode, k, type);
         } }, 'Начать'),
         mode === 'type' ? el('a', { class: 'btn ghost', href: '#/guide/' + type }, 'Как отвечать') : null)));
+  }
+
+  // ---------- unfinished test ----------
+  // Every completed task is saved at once, so a closed tab or a break loses nothing but the task in progress.
+  function saveDraft(session, mode, k, results, next) {
+    store.set('draft', {
+      id: session.id, mode: mode, k: k, variant: session.variant, name: session.name || '', startedAt: session.startedAt,
+      next: next, total: session.steps.length, results: results.map(strip), savedAt: new Date().toISOString()
+    });
+  }
+  function getDraft() {
+    const d = store.get('draft', null);
+    return d && d.results && d.results.length && d.next < d.total ? d : null;
+  }
+  // Turns the unfinished test into a normal result with what was answered.
+  function finalizeDraft() {
+    const d = getDraft();
+    store.set('draft', null);
+    if (!d) return null;
+    const rec = { id: d.id, name: d.name, mode: d.mode, variant: d.variant, startedAt: d.startedAt, finishedAt: d.savedAt, results: d.results, partial: { done: d.next, total: d.total } };
+    const all = store.get('sessions', []);
+    all.unshift(rec);
+    store.set('sessions', all.slice(0, 20));
+    return rec;
+  }
+  function resumeDraft() {
+    const d = getDraft();
+    if (!d) return;
+    S.unlock();
+    run(X.buildSession(d.mode, d.k, null), d.mode, d.k, null, d);
+  }
+  function draftCard() {
+    const d = getDraft();
+    if (!d) return null;
+    return el('div', { class: 'card resume' },
+      el('div', { class: 'c-yellow' }, X.ico('clock', 'lg')),
+      el('div', null,
+        el('h3', null, 'Незаконченный тест'),
+        el('p', null, 'Вариант ' + d.variant + ' · ' + (d.mode === 'full' ? 'полный' : 'короткий') + ' — пройдено ' + d.next + ' из ' + d.total + ' заданий'),
+        el('div', { class: 'row' },
+          el('button', { class: 'btn', type: 'button', onclick: resumeDraft }, 'Продолжить'),
+          el('button', { class: 'btn ghost', type: 'button', onclick: function () { const rec = finalizeDraft(); if (rec) location.hash = '#/result/' + rec.id; } }, 'Показать ответы'),
+          el('button', { class: 'btn ghost', type: 'button', onclick: function () { if (window.confirm('Удалить ответы незаконченного теста?')) { store.set('draft', null); route(); } } }, 'Удалить'))));
   }
 
   // ---------- runner ----------
@@ -215,7 +260,7 @@
     document.body.classList.remove('running');
   }
 
-  async function run(session, mode, k, type) {
+  async function run(session, mode, k, type, draft) {
     const nameEl = el('b'), subEl = el('span');
     const timeText = el('span');
     const timerEl = el('div', { class: 'run-timer off' }, el('span', { html: X.ICON.clock, style: 'display:flex' }), timeText);
@@ -274,7 +319,11 @@
     app.replaceChildren(el('div', { class: 'run' },
       el('header', { class: 'run-top' },
         el('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Выйти', html: X.ICON.cross, onclick: function () {
-          if (window.confirm('Выйти? Ответы этого прохождения не сохранятся.')) { abort(); location.hash = '#/'; }
+          const multi = session.steps.length > 1;
+          if (window.confirm(multi ? 'Выйти? Пройденные задания сохранены — продолжить можно с главной.' : 'Выйти? Ответ на это задание не сохранится.')) {
+            abort();
+            if (location.hash === '#/' || location.hash === '') route(); else location.hash = '#/';
+          }
         } }),
         el('div', { class: 'pbar' }, progress), timerEl),
       el('div', { class: 'run-meta' }, nameEl, subEl),
@@ -285,10 +334,11 @@
       if (s.type === 'writePhoto' || s.type === 'speakPhoto') s.items.forEach(function (p) { if (p) { const im = new Image(); im.src = p.src; } });
     });
 
-    session.startedAt = new Date().toISOString();
-    const results = [];
+    const results = draft ? draft.results.slice() : [];
+    if (draft) { session.id = draft.id; session.name = draft.name; session.startedAt = draft.startedAt; }
+    else session.startedAt = new Date().toISOString();
     const n = session.steps.length;
-    for (let i = 0; i < n; i++) {
+    for (let i = draft ? draft.next : 0; i < n; i++) {
       const step = session.steps[i], t = X.TYPE[step.type];
       progress.style.width = (i / n * 100) + '%';
       ctx.name(n > 1 ? 'Задание ' + (i + 1) + ' из ' + n : t.name); ctx.sub(''); ctx.clearTimer();
@@ -309,6 +359,7 @@
       const r = await T[step.type](ctx, step.items);
       if (ctx.aborted) return;
       results.push(r);
+      if (n > 1) saveDraft(session, mode, k, results, i + 1);
     }
     progress.style.width = '100%';
     ctx.clearTimer(); ctx.name('Готово'); ctx.sub('');
@@ -325,6 +376,7 @@
     store.set('sessions', all.slice(0, 20));
     if (mode === 'type') { const p = store.get('ptr', {}); p[type] = (p[type] || 0) + 1; store.set('ptr', p); }
     else { const d = store.get('done', {}); d[k + 1] = true; store.set('done', d); }
+    store.set('draft', null);
     active = null;
     document.body.classList.remove('running');
     location.hash = '#/result/' + rec.id;
@@ -403,7 +455,7 @@
       (r.open || []).forEach(function (o) { open.push(o); });
     });
     return {
-      app: 'det-prep', v: 1, id: rec.id, name: rec.name, variant: rec.variant, mode: rec.mode,
+      app: 'det-prep', v: 1, id: rec.id, name: rec.name, variant: rec.variant, mode: rec.mode, partial: rec.partial || null,
       startedAt: rec.startedAt, finishedAt: rec.finishedAt, device: navigator.userAgent,
       estimate: { reading: est.R, listening: est.L, note: 'rough, from auto-scored items only' },
       auto: auto, open: open
@@ -523,7 +575,8 @@
   const OPEN_ICON = { summary: 'listening' };
 
   function sessionTitle(rec) {
-    return rec.mode.indexOf('type:') === 0 ? X.TYPE[rec.mode.slice(5)].name : 'Вариант ' + rec.variant + ' · ' + (rec.mode === 'full' ? 'полный' : 'короткий');
+    if (rec.mode.indexOf('type:') === 0) return X.TYPE[rec.mode.slice(5)].name;
+    return 'Вариант ' + rec.variant + ' · ' + (rec.mode === 'full' ? 'полный' : 'короткий') + (rec.partial ? ' · не закончен' : '');
   }
 
   function viewResult(id) {
@@ -546,7 +599,8 @@
 
     mount(
       el('div', { class: 'res-head' },
-        el('div', null, el('span', { class: 'chip plain' }, X.fmtDate(rec.finishedAt) + (rec.name ? ' · ' + rec.name : '')), el('h1', { style: 'margin-top:12px' }, sessionTitle(rec))),
+        el('div', null, el('div', { class: 'row' }, el('span', { class: 'chip plain' }, X.fmtDate(rec.finishedAt) + (rec.name ? ' · ' + rec.name : '')),
+          rec.partial ? el('span', { class: 'chip c-yellow' }, 'пройдено ' + rec.partial.done + ' из ' + rec.partial.total + ' заданий') : null), el('h1', { style: 'margin-top:12px' }, sessionTitle(rec))),
         el('a', { class: 'btn ghost sm', href: '#/' }, 'На главную')),
       isType ? null : el('div', { class: 'grid est' }, estCard('R', est.R, false), estCard('L', est.L, false), estCard('W', null, hasW), estCard('S', null, hasS)),
       (!isType && (est.R != null || est.L != null)) ? el('p', { class: 'hint', style: 'margin-top:12px' }, 'Reading и Listening — предварительная оценка по автоматически проверенным заданиям, не официальный балл.') : null,
