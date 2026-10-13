@@ -149,7 +149,7 @@
       case 'complete': {
         const a = slice(byLevel(D.complete), k);
         if (short) return [a[1]];
-        return mode === 'type' ? [a[k % 2], a[2 + (k % 2)]] : a;
+        return mode === 'type' ? [a[(k % 2) * 2]] : a;
       }
       case 'dictation': {
         const a = slice(byLevel(D.dictation), k);
@@ -159,15 +159,15 @@
       case 'reading': {
         const nar = kind(D.reading, 'narrative'), exp = kind(D.reading, 'expository');
         const pair = [nar[k], exp[(k + 4) % N]];
-        return (short || mode === 'type') ? [pair[k % 2]] : pair;
+        return [pair[(k + (mode === 'type' ? 1 : 0)) % 2]];
       }
       case 'listening': {
         const peer = kind(D.listening, 'peer'), prof = kind(D.listening, 'professor');
         const pair = [peer[k], prof[(k + 4) % N]];
-        return (short || mode === 'type') ? [pair[(k + 1) % 2]] : pair;
+        return [pair[(k + (mode === 'type' ? 0 : 1)) % 2]];
       }
       case 'writePhoto':
-        if (mode === 'type') return [D.photos[48 + k], D.photos[60 + k]];
+        if (mode === 'type') return [D.photos[48 + k]];
         return short ? [D.photos[k]] : [D.photos[k], D.photos[12 + k], D.photos[24 + k]];
       case 'speakPhoto':
         return [mode === 'type' ? D.photos[48 + ((k + 6) % N)] : D.photos[36 + k]];

@@ -5,7 +5,7 @@
   let active = null; // running session context
 
   const STEP_TIME = { // upper bound in minutes per step, for the start screen
-    full: { readSelect: 2, fill: 3, complete: 12, dictation: 7, reading: 15, listening: 16, writePhoto: 3, interactiveWriting: 9, speakPhoto: 2, readSpeak: 2, interactiveSpeaking: 5, writingSample: 6, speakingSample: 4 },
+    full: { readSelect: 2, fill: 3, complete: 12, dictation: 7, reading: 8, listening: 8, writePhoto: 3, interactiveWriting: 9, speakPhoto: 2, readSpeak: 2, interactiveSpeaking: 5, writingSample: 6, speakingSample: 4 },
     short: { readSelect: 1, fill: 1, complete: 3, dictation: 3, reading: 8, listening: 8, writePhoto: 1, speakPhoto: 2, interactiveSpeaking: 3, writingSample: 6 }
   };
 
@@ -92,7 +92,7 @@
             el('li', null, 'Каждый день новый вариант — задания не повторяются'),
             el('li', null, 'Письмо и речь разбираются по критериям теста')),
           el('div', { class: 'cta' },
-            el('a', { class: 'btn', href: '#/start/full/' + (k + 1) }, 'Полный тест', el('small', null, '60–80 минут')),
+            el('a', { class: 'btn', href: '#/start/full/' + (k + 1) }, 'Полный тест', el('small', null, '50–70 минут')),
             el('a', { class: 'btn ghost', href: '#/start/short/' + (k + 1) }, 'Короткий', el('small', null, '25–35 минут')))),
         heroArt()),
 

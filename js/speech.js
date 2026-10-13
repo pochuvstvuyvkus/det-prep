@@ -21,8 +21,10 @@
     if (synth.addEventListener) synth.addEventListener('voiceschanged', loadVoices);
   }
   // System voice names are localised (a Russian macOS lists "Саманта"), so both spellings are listed.
-  const FEMALE = ['Samantha', 'Саманта', 'Ava', 'Allison', 'Susan', 'Google US English', 'Microsoft Aria', 'Microsoft Jenny', 'Microsoft Zira', 'Karen', 'Карен', 'Moira', 'Мойра', 'Tessa', 'Тесса', 'Serena', 'Kate', 'Google UK English Female'];
-  const MALE = ['Daniel', 'Дэниэл', 'Alex', 'Aaron', 'Google UK English Male', 'Microsoft Guy', 'Microsoft David', 'Microsoft Ryan', 'Oliver', 'Arthur', 'Gordon', 'Rishi', 'Риши', 'Tom'];
+  const FEMALE = ['Google US English', 'Microsoft Ava Online', 'Microsoft Aria Online', 'Microsoft Jenny Online', 'Microsoft Emma Online', 'Ava (Premium)', 'Zoe (Premium)', 'Ava (Enhanced)', 'Samantha (Enhanced)', 'Allison (Enhanced)', 'Google UK English Female',
+    'Samantha', 'Саманта', 'Ava', 'Allison', 'Susan', 'Microsoft Aria', 'Microsoft Jenny', 'Microsoft Zira', 'Karen', 'Карен', 'Moira', 'Мойра', 'Tessa', 'Тесса', 'Serena', 'Kate'];
+  const MALE = ['Google UK English Male', 'Microsoft Andrew Online', 'Microsoft Guy Online', 'Microsoft Brian Online', 'Microsoft Ryan Online', 'Evan (Enhanced)', 'Tom (Enhanced)', 'Daniel (Enhanced)',
+    'Daniel', 'Дэниэл', 'Alex', 'Aaron', 'Microsoft Guy', 'Microsoft David', 'Microsoft Ryan', 'Oliver', 'Arthur', 'Gordon', 'Rishi', 'Риши', 'Tom'];
   // Novelty and robotic system voices that must never read a listening task.
   const BAD = /^(Albert|Bad News|Bahh|Bells|Boing|Bubbles|Cellos|Good News|Jester|Organ|Superstar|Trinoids|Whisper|Wobble|Zarvox|Fred|Junior|Kathy|Ralph|Eddy|Flo|Grandma|Grandpa|Reed|Rocko|Sandy|Shelley|Альберт|Бах|Виолончель|Воббл|Джуниор|Зарвокс|Колокольчик|Кэти|Орган|Плохие новости|Прыг-скок|Пузырьки|Ральф|Суперзвезда|Триноид|Фред|Хорошие новости|Шепот|Шутник)(\s|$)/i;
   function byNames(list) {
