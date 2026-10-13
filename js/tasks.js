@@ -89,14 +89,25 @@
         b.classList.toggle('cur', focused && i === Math.min(v.length, boxes.length - 1));
       });
     }
-    input.addEventListener('input', function () {
-      input.value = input.value.replace(/[^a-zA-Z]/g, '').toLowerCase().slice(0, rest.length);
+    function changed() {
       render();
       if (input.value.length === rest.length && api.onFull) api.onFull();
-    });
+    }
     input.addEventListener('keydown', function (e) {
-      if (e.key === 'Backspace' && !input.value && api.onBack) { e.preventDefault(); api.onBack(); }
-      if (e.key === 'Enter' && api.onEnter) { e.preventDefault(); api.onEnter(); }
+      if (e.key === 'Backspace' && !input.value && api.onBack) { e.preventDefault(); api.onBack(); return; }
+      if (e.key === 'Enter' && api.onEnter) { e.preventDefault(); api.onEnter(); return; }
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      // The physical key decides the letter, so typing works with a Russian keyboard layout too.
+      const m = /^Key([A-Z])$/.exec(e.code || '');
+      if (!m) return;
+      e.preventDefault();
+      if (input.value.length < rest.length) { input.value += m[1].toLowerCase(); changed(); }
+    });
+    // Phones and pasted text arrive here: keep English letters, say why others are dropped.
+    input.addEventListener('input', function () {
+      if (/[^\x00-\x7f]/.test(input.value)) X.toast('Переключите клавиатуру на английскую');
+      input.value = input.value.replace(/[^a-zA-Z]/g, '').toLowerCase().slice(0, rest.length);
+      changed();
     });
     input.addEventListener('focus', render);
     input.addEventListener('blur', render);
