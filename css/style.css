@@ -512,3 +512,14 @@ body.running .app { max-width: none; padding: 0; }
   opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; max-width: calc(100vw - 32px); text-align: center;
 }
 .toast.on { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---------- own dialog ---------- */
+.modal { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 20px; background: rgba(61, 61, 74, .5); animation: fade .15s ease-out; }
+.modal-card { width: 100%; max-width: 420px; background: #fff; border: 2px solid var(--line); border-radius: 26px; padding: 28px 26px 24px; text-align: center; animation: pop .18s ease-out; }
+.modal-card h3 { font: 900 26px/1.2 var(--font); letter-spacing: -.01em; }
+.modal-card p { color: var(--muted); margin-top: 10px; }
+.modal-btns { display: grid; gap: 10px; margin-top: 22px; }
+.btn.danger { color: var(--red-t); }
+@keyframes fade { from { opacity: 0; } }
+@keyframes pop { from { transform: translateY(14px) scale(.97); opacity: 0; } }
+@media (max-width: 760px) { .modal { place-items: end center; padding: 12px; } }

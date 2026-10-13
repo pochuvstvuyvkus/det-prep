@@ -16,6 +16,7 @@
   // ---------- router ----------
   function route() {
     if (active) abort();
+    document.querySelectorAll('.modal').forEach(function (m) { m.remove(); });
     const parts = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
     const page = parts[0] || 'home';
     const tab = page === 'start' ? 'practice' : page === 'result' ? 'history' : page;
@@ -247,7 +248,7 @@
         el('div', { class: 'row' },
           el('button', { class: 'btn', type: 'button', onclick: resumeDraft }, 'Продолжить'),
           el('button', { class: 'btn ghost', type: 'button', onclick: function () { const rec = finalizeDraft(); if (rec) location.hash = '#/result/' + rec.id; } }, 'Показать ответы'),
-          el('button', { class: 'btn ghost', type: 'button', onclick: function () { if (window.confirm('Удалить ответы незаконченного теста?')) { store.set('draft', null); route(); } } }, 'Удалить'))));
+          el('button', { class: 'btn ghost', type: 'button', onclick: function () { X.ask({ title: 'Удалить незаконченный тест?', text: 'Ответы из него пропадут.', yes: 'Удалить', no: 'Оставить' }).then(function (yes) { if (yes) { store.set('draft', null); route(); } }); } }, 'Удалить'))));
   }
 
   // ---------- runner ----------
@@ -320,10 +321,14 @@
       el('header', { class: 'run-top' },
         el('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Выйти', html: X.ICON.cross, onclick: function () {
           const multi = session.steps.length > 1;
-          if (window.confirm(multi ? 'Выйти? Пройденные задания сохранены — продолжить можно с главной.' : 'Выйти? Ответ на это задание не сохранится.')) {
+          X.ask({
+            title: multi ? 'Выйти из теста?' : 'Выйти из задания?',
+            text: multi ? 'Пройденные задания сохранены — продолжить можно с главной.' : 'Ответ на это задание не сохранится.'
+          }).then(function (yes) {
+            if (!yes || ctx.aborted) return;
             abort();
             if (location.hash === '#/' || location.hash === '') route(); else location.hash = '#/';
-          }
+          });
         } }),
         el('div', { class: 'pbar' }, progress), timerEl),
       el('div', { class: 'run-meta' }, nameEl, subEl),

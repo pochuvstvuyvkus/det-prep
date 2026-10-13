@@ -40,6 +40,24 @@
     toastTimer = setTimeout(function () { t.classList.remove('on'); }, 2600);
   }
 
+  // A question in the page's own style (the browser's confirm box looks foreign and names the site).
+  function ask(opts) {
+    return new Promise(function (resolve) {
+      if (document.querySelector('.modal')) { resolve(false); return; }
+      function done(v) { wrap.remove(); document.removeEventListener('keydown', onKey); resolve(v); }
+      function onKey(e) { if (e.key === 'Escape') done(false); }
+      const wrap = el('div', { class: 'modal', onclick: function (e) { if (e.target === wrap) done(false); } },
+        el('div', { class: 'modal-card', role: 'dialog', 'aria-modal': 'true' },
+          el('h3', null, opts.title),
+          opts.text ? el('p', null, opts.text) : null,
+          el('div', { class: 'modal-btns' },
+            el('button', { class: 'btn blue', type: 'button', onclick: function () { done(false); } }, opts.no || 'Остаться'),
+            el('button', { class: 'btn ghost danger', type: 'button', onclick: function () { done(true); } }, opts.yes || 'Выйти'))));
+      document.body.appendChild(wrap);
+      document.addEventListener('keydown', onKey);
+    });
+  }
+
   // ---------- storage ----------
   const store = {
     get: function (k, d) {
@@ -317,7 +335,7 @@
   }
 
   window.DET = {
-    D: D, N: N, el: el, esc: esc, toast: toast, store: store, rng: rng, shuffle: shuffle, hash: hash,
+    D: D, N: N, el: el, esc: esc, toast: toast, ask: ask, store: store, rng: rng, shuffle: shuffle, hash: hash,
     TYPES: TYPES, TYPE: TYPE, SKILL: SKILL, ICON: ICON, ico: ico, itemsFor: itemsFor, buildSession: buildSession, speakingTurns: speakingTurns, variantOfDay: variantOfDay,
     norm: norm, words: words, countWords: countWords, editDistance: editDistance, dictationScore: dictationScore,
     diffHtml: diffHtml, keyScore: keyScore, DIFF: DIFF, estimate: estimate, cefr: cefr, fmtTime: fmtTime, fmtDate: fmtDate

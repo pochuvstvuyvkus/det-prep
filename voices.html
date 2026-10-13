@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=13">
+<link rel="stylesheet" href="css/style.css?v=15">
 <style>
   .voices { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; margin-top: 24px; }
   .voice { display: grid; gap: 10px; }
@@ -20,23 +20,20 @@
 <header class="top"><a class="logo" href="./"><span class="logo-mark">160</span><span class="logo-text">Курс на 160</span></a></header>
 <main class="app">
   <div class="res-head"><h1>Голоса</h1></div>
-  <p class="muted" style="margin-top:10px;font-size:18px">Шесть голосов читают одни и те же две фразы. Сейчас на сайте стоят «Женский 1» и «Мужской 1».</p>
+  <p class="muted" style="margin-top:10px;font-size:18px">Эти десять голосов по очереди читают задания на слух. Все говорят одну и ту же фразу в темпе диалогов.</p>
   <div class="voices" id="list"></div>
 </main>
 <script>
   const voices = [
-    ['af_heart', 'Женский 1', 'американский', 'c-pink', true],
-    ['af_bella', 'Женский 2', 'американский', 'c-pink', false],
-    ['bf_emma', 'Женский 3', 'британский', 'c-pink', false],
-    ['am_michael', 'Мужской 1', 'американский', 'c-blue', true],
-    ['am_fenrir', 'Мужской 2', 'американский', 'c-blue', false],
-    ['bm_george', 'Мужской 3', 'британский', 'c-blue', false]
+    ['af_heart', 'Женский 1', 'американский'], ['af_bella', 'Женский 2', 'американский'], ['af_sarah', 'Женский 3', 'американский'],
+    ['bf_emma', 'Женский 4', 'британский'], ['bf_isabella', 'Женский 5', 'британский'],
+    ['am_michael', 'Мужской 1', 'американский'], ['am_fenrir', 'Мужской 2', 'американский'], ['am_puck', 'Мужской 3', 'американский'],
+    ['bm_george', 'Мужской 4', 'британский'], ['bm_fable', 'Мужской 5', 'британский']
   ];
   document.getElementById('list').innerHTML = voices.map(function (v) {
-    return '<div class="card voice ' + v[3] + '"><h3>' + v[1] + '</h3>' +
-      '<div class="row"><span class="chip">' + v[2] + '</span>' + (v[4] ? '<span class="chip ok">сейчас на сайте</span>' : '') + '</div>' +
-      '<audio controls preload="none" src="audio/samples/' + v[0] + '-a.m4a"></audio>' +
-      '<audio controls preload="none" src="audio/samples/' + v[0] + '-b.m4a"></audio></div>';
+    return '<div class="card voice ' + (v[0][1] === 'f' ? 'c-pink' : 'c-blue') + '"><h3>' + v[1] + '</h3>' +
+      '<span class="chip">' + v[2] + '</span>' +
+      '<audio controls preload="none" src="audio/samples/' + v[0] + '.m4a"></audio></div>';
   }).join('');
 </script>
 </body>

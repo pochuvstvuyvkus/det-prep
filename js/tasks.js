@@ -416,10 +416,14 @@
     // Listen and Complete
     ctx.sub(head + 'Listen and Complete');
     const playBtn = el('button', { class: 'play', type: 'button', html: ICON.speaker, 'aria-label': 'Play the scenario' });
+    // A tap always plays the scenario from the start, also while it is already playing;
+    // only the other person's line (heard once) cannot be interrupted.
+    let playing = 0;
     const playScenario = function () {
       if (busy) return;
-      busy = true; playBtn.classList.add('on');
-      S.say(it.id + '-s', it.scenario, { voice: narrator }).then(function () { busy = false; playBtn.classList.remove('on'); });
+      const mine = ++playing;
+      playBtn.classList.add('on');
+      S.say(it.id + '-s', it.scenario, { voice: narrator }).then(function () { if (mine === playing) playBtn.classList.remove('on'); });
     };
     playBtn.addEventListener('click', playScenario);
     const inputs = it.complete.map(function () { return el('input', { class: 'input', type: 'text', autocomplete: 'off', autocapitalize: 'off', autocorrect: 'off', spellcheck: 'false' }); });
