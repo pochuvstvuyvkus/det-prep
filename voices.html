@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Голоса — Курс на 160</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css?v=13">
+<style>
+  .voices { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; margin-top: 24px; }
+  .voice { display: grid; gap: 10px; }
+  .voice h3 { font: 900 20px/1.2 var(--font); }
+  .voice audio { width: 100%; }
+  .voice .chip { justify-self: start; }
+</style>
+</head>
+<body>
+<header class="top"><a class="logo" href="./"><span class="logo-mark">160</span><span class="logo-text">Курс на 160</span></a></header>
+<main class="app">
+  <div class="res-head"><h1>Голоса</h1></div>
+  <p class="muted" style="margin-top:10px;font-size:18px">Шесть голосов читают одни и те же две фразы. Сейчас на сайте стоят «Женский 1» и «Мужской 1».</p>
+  <div class="voices" id="list"></div>
+</main>
+<script>
+  const voices = [
+    ['af_heart', 'Женский 1', 'американский', 'c-pink', true],
+    ['af_bella', 'Женский 2', 'американский', 'c-pink', false],
+    ['bf_emma', 'Женский 3', 'британский', 'c-pink', false],
+    ['am_michael', 'Мужской 1', 'американский', 'c-blue', true],
+    ['am_fenrir', 'Мужской 2', 'американский', 'c-blue', false],
+    ['bm_george', 'Мужской 3', 'британский', 'c-blue', false]
+  ];
+  document.getElementById('list').innerHTML = voices.map(function (v) {
+    return '<div class="card voice ' + v[3] + '"><h3>' + v[1] + '</h3>' +
+      '<div class="row"><span class="chip">' + v[2] + '</span>' + (v[4] ? '<span class="chip ok">сейчас на сайте</span>' : '') + '</div>' +
+      '<audio controls preload="none" src="audio/samples/' + v[0] + '-a.m4a"></audio>' +
+      '<audio controls preload="none" src="audio/samples/' + v[0] + '-b.m4a"></audio></div>';
+  }).join('');
+</script>
+</body>
+</html>

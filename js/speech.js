@@ -87,9 +87,38 @@
       setTimeout(next, 80);
     });
   }
-  function stop() { token++; if (synth) synth.cancel(); }
+  // ---------- recorded voices ----------
+  // Listening material is pre-recorded (audio/<clip>.m4a) so it sounds the same on every device.
+  // One shared player: phones allow sound without a tap only on an element that a tap has started once.
+  const player = typeof Audio !== 'undefined' ? new Audio() : null;
+  const SILENCE = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=';
+  let clipToken = 0, clipEnd = null;
+  function say(clip, text, opts) {
+    return new Promise(function (resolve) {
+      if (!player || !clip) { speak(text, opts).then(resolve); return; }
+      const mine = ++clipToken;
+      token++; if (synth) synth.cancel();
+      if (clipEnd) { const f = clipEnd; clipEnd = null; f(false); }
+      let done = false;
+      function finish(ok) { if (done) return; done = true; clipEnd = null; player.onended = null; player.onerror = null; resolve(ok); }
+      function viaBrowser() { if (done) return; done = true; clipEnd = null; player.onended = null; player.onerror = null; if (mine !== clipToken) { resolve(false); return; } speak(text, opts).then(resolve); }
+      clipEnd = finish;
+      player.onended = function () { finish(true); };
+      player.onerror = viaBrowser;
+      player.src = 'audio/' + clip + '.m4a';
+      const p = player.play();
+      if (p && p.catch) p.catch(viaBrowser); // an interrupted clip is already finished, so this only acts on a real refusal
+    });
+  }
+  function stop() {
+    token++; clipToken++;
+    if (synth) synth.cancel();
+    if (player) { try { player.pause(); } catch (e) { /* ignore */ } }
+    if (clipEnd) { const f = clipEnd; clipEnd = null; f(false); }
+  }
   // Must run inside a tap: some phones only allow speech after a user gesture.
   function unlock() {
+    if (player) { try { player.src = SILENCE; const p = player.play(); if (p && p.catch) p.catch(function () {}); } catch (e) { /* ignore */ } }
     if (!synth) return;
     try { const u = new SpeechSynthesisUtterance(' '); u.volume = 0; synth.speak(u); } catch (e) { /* ignore */ }
   }
@@ -220,7 +249,7 @@
   }
 
   window.DETSpeech = {
-    ttsOK: !!synth, sttOK: !!SR, canRecord: canRecord, isMobile: isMobile,
+    ttsOK: !!synth, audioOK: !!(player || synth), say: say, sttOK: !!SR, canRecord: canRecord, isMobile: isMobile,
     speak: speak, stop: stop, voiceName: function (k) { const v = pickVoice(k); return v ? v.name : null; }, unlock: unlock, hasVoice: hasVoice, askMic: askMic, createCapture: createCapture
   };
 })();

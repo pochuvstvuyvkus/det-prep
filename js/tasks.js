@@ -223,7 +223,7 @@
 
   // ---------- Listen and Type ----------
   T.dictation = async function (ctx, items) {
-    if (!S.ttsOK) return { type: 'dictation', skipped: 'no-tts' };
+    if (!S.audioOK) return { type: 'dictation', skipped: 'no-tts' };
     const rows = [];
     for (let i = 0; i < items.length && !ctx.aborted; i++) {
       const it = items[i];
@@ -240,7 +240,7 @@
       const play = function () {
         if (speaking || plays >= 3) return;
         plays++; speaking = true; upd();
-        S.speak(it.s, { voice: i % 2 ? 'm' : 'f', rate: 0.9 }).then(function () { speaking = false; upd(); });
+        S.say(it.id, it.s, { voice: i % 2 ? 'm' : 'f', rate: 0.9 }).then(function () { speaking = false; upd(); });
       };
       btn.addEventListener('click', play);
       ctx.body(el('div', null,
@@ -419,7 +419,7 @@
     const playScenario = function () {
       if (busy) return;
       busy = true; playBtn.classList.add('on');
-      S.speak(it.scenario, { voice: narrator }).then(function () { busy = false; playBtn.classList.remove('on'); });
+      S.say(it.id + '-s', it.scenario, { voice: narrator }).then(function () { busy = false; playBtn.classList.remove('on'); });
     };
     playBtn.addEventListener('click', playScenario);
     const inputs = it.complete.map(function () { return el('input', { class: 'input', type: 'text', autocomplete: 'off', autocapitalize: 'off', autocorrect: 'off', spellcheck: 'false' }); });
@@ -453,7 +453,7 @@
       if (turn.partner) {
         busy = true; again.disabled = true;
         area.replaceChildren(listening());
-        await S.speak(turn.partner, { voice: it.partner.voice });
+        await S.say(it.id + '-t' + t, turn.partner, { voice: it.partner.voice });
         busy = false; again.disabled = false;
         if (timeUp) { out.turns.push({ partner: turn.partner, answer: turn.a, given: null, ok: false }); continue; }
       }
@@ -477,7 +477,7 @@
       const area = el('div');
       ctx.body(el('div', null, log, area));
       area.replaceChildren(listening());
-      await S.speak(it.closing, { voice: it.partner.voice });
+      await S.say(it.id + '-c', it.closing, { voice: it.partner.voice });
       say(it.partner.name, it.closing);
       area.replaceChildren();
       await next('Continue');
@@ -497,7 +497,7 @@
   }
 
   T.listening = async function (ctx, items) {
-    if (!S.ttsOK) return { type: 'listening', skipped: 'no-tts' };
+    if (!S.audioOK) return { type: 'listening', skipped: 'no-tts' };
     const rows = [], open = [];
     for (let i = 0; i < items.length && !ctx.aborted; i++) {
       const it = items[i];
@@ -658,17 +658,7 @@
 
   T.interactiveSpeaking = async function (ctx, items) {
     const it = items[0];
-    const qs = [];
-    it.topics.forEach(function (t, ti) {
-      t.qs.forEach(function (q, qi) {
-        let lead;
-        if (ti === 0 && qi === 0) lead = "I'd like to ask you a few questions about " + t.name + '.';
-        else if (qi === 0) lead = 'Thanks for talking to me about ' + it.topics[ti - 1].name + ". Now I'd like to ask you about " + t.name + '.';
-        else if (qi === 1) lead = ti ? 'Interesting. I have another question.' : "I see. Here's another question.";
-        else lead = ti ? "Okay. I've got one last question." : "Thanks. I've got one more question about this.";
-        qs.push({ topic: t.name, q: q, say: lead + ' ' + q });
-      });
-    });
+    const qs = X.speakingTurns(it);
     const turns = [];
     for (let i = 0; i < qs.length && !ctx.aborted; i++) {
       ctx.sub('Question ' + (i + 1) + ' / ' + qs.length);
@@ -678,8 +668,8 @@
       ctx.clearTimer();
       ctx.footer(null);
       ctx.body(el('div', { style: 'display:flex;flex-direction:column;flex:1;align-items:center;justify-content:center;gap:14px' }, avatar, state,
-        S.ttsOK ? null : el('div', { class: 'prompt' }, qs[i].q), host));
-      if (S.ttsOK) await S.speak(qs[i].say, { voice: 'f' }); else await sleep(600);
+        S.audioOK ? null : el('div', { class: 'prompt' }, qs[i].q), host));
+      if (S.audioOK) await S.say(qs[i].clip, qs[i].say, { voice: 'f' }); else await sleep(600);
       if (ctx.aborted) break;
       avatar.classList.remove('on');
       state.textContent = 'Your turn — 35 seconds';

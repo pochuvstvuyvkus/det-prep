@@ -169,8 +169,8 @@
     const title = mode === 'type' ? X.TYPE[type].name : 'Вариант ' + (k + 1) + ' · ' + (mode === 'full' ? 'полный' : 'короткий');
 
     const checks = el('div', { class: 'checks' });
-    const soundCheck = el('div', { class: 'check ' + (S.ttsOK ? 'ok' : 'bad') }, el('i'), S.ttsOK ? 'Звук' : 'В этом браузере нет синтеза речи — задания на слух будут пропущены',
-      S.ttsOK ? el('button', { class: 'btn sm ghost', type: 'button', onclick: function () { S.speak('This is a sound check. Can you hear me clearly?', { voice: 'f' }); } }, 'Проверить') : null);
+    const soundCheck = el('div', { class: 'check ' + (S.audioOK ? 'ok' : 'bad') }, el('i'), S.audioOK ? 'Звук' : 'В этом браузере нет звука — задания на слух будут пропущены',
+      S.audioOK ? el('button', { class: 'btn sm ghost', type: 'button', onclick: function () { S.say('check', 'This is a sound check. Can you hear me clearly?', { voice: 'f' }); } }, 'Проверить') : null);
     const micCheck = el('div', { class: 'check' }, el('i'), 'Микрофон');
     const micBtn = el('button', { class: 'btn sm ghost', type: 'button', onclick: function () {
       S.askMic().then(function (r) {
@@ -605,7 +605,7 @@
       isType ? null : el('div', { class: 'grid est' }, estCard('R', est.R, false), estCard('L', est.L, false), estCard('W', null, hasW), estCard('S', null, hasS)),
       (!isType && (est.R != null || est.L != null)) ? el('p', { class: 'hint', style: 'margin-top:12px' }, 'Reading и Listening — предварительная оценка по автоматически проверенным заданиям, не официальный балл.') : null,
       opens.length ? el('section', { class: 'sec', style: 'margin-top:28px' }, sendBlock(rec)) : null,
-      skipped.length ? el('p', { class: 'hint', style: 'margin-top:14px' }, 'Пропущено из-за отсутствия синтеза речи: ' + skipped.map(function (r) { return X.TYPE[r.type].name; }).join(', ')) : null,
+      skipped.length ? el('p', { class: 'hint', style: 'margin-top:14px' }, 'Пропущено — в браузере нет звука: ' + skipped.map(function (r) { return X.TYPE[r.type].name; }).join(', ')) : null,
       autos.length ? el('section', { class: 'sec', style: 'margin-top:40px' }, el('h2', { style: 'margin-bottom:18px' }, 'Разбор'), autos.map(function (r, i) { return acc(r.type, X.TYPE[r.type].name, meter(r), autoReview(r), autos.length === 1 && i === 0); })) : null,
       opens.length ? el('section', { class: 'sec', style: 'margin-top:40px' }, el('h2', { style: 'margin-bottom:18px' }, 'Ответы на проверку'), opens.map(function (o) {
         return acc(OPEN_ICON[o.task] || o.task, OPEN_NAME[o.task] || X.TYPE[o.task].name, el('span', { class: 'chip c-yellow' }, 'ждёт проверки'), openReview(o), opens.length === 1);

@@ -183,6 +183,22 @@
     return [];
   }
 
+  // Interactive Speaking: what the examiner says on each turn, and the name of its recording.
+  function speakingTurns(it) {
+    const out = [];
+    it.topics.forEach(function (t, ti) {
+      t.qs.forEach(function (q, qi) {
+        let lead;
+        if (ti === 0 && qi === 0) lead = "I'd like to ask you a few questions about " + t.name + '.';
+        else if (qi === 0) lead = 'Thanks for talking to me about ' + it.topics[ti - 1].name + ". Now I'd like to ask you about " + t.name + '.';
+        else if (qi === 1) lead = ti ? 'Interesting. I have another question.' : "I see. Here's another question.";
+        else lead = ti ? "Okay. I've got one last question." : "Thanks. I've got one more question about this.";
+        out.push({ topic: t.name, q: q, say: lead + ' ' + q, clip: it.id + '-q' + (ti * 3 + qi + 1) });
+      });
+    });
+    return out;
+  }
+
   const FULL = TYPES.map(function (t) { return t.key; });
   const SHORT = ['readSelect', 'fill', 'complete', 'dictation', 'reading', 'listening', 'writePhoto', 'speakPhoto', 'interactiveSpeaking', 'writingSample'];
 
@@ -302,7 +318,7 @@
 
   window.DET = {
     D: D, N: N, el: el, esc: esc, toast: toast, store: store, rng: rng, shuffle: shuffle, hash: hash,
-    TYPES: TYPES, TYPE: TYPE, SKILL: SKILL, ICON: ICON, ico: ico, itemsFor: itemsFor, buildSession: buildSession, variantOfDay: variantOfDay,
+    TYPES: TYPES, TYPE: TYPE, SKILL: SKILL, ICON: ICON, ico: ico, itemsFor: itemsFor, buildSession: buildSession, speakingTurns: speakingTurns, variantOfDay: variantOfDay,
     norm: norm, words: words, countWords: countWords, editDistance: editDistance, dictationScore: dictationScore,
     diffHtml: diffHtml, keyScore: keyScore, DIFF: DIFF, estimate: estimate, cefr: cefr, fmtTime: fmtTime, fmtDate: fmtDate
   };
